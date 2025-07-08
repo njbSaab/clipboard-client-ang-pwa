@@ -1,0 +1,21 @@
+<div class="container mx-auto p-4 pb-0">
+  <nav class="nav mx-auto">
+    <div class="tabs tabs-box flex space-x-4">
+      <a
+        routerLink="/clipboard"
+        routerLinkActive="tab-active"
+        class="tab px-4 py-2 rounded"
+        >Clipboard</a
+      >
+      <a
+        routerLink="/notes"
+        routerLinkActive="tab-active"
+        class="tab px-4 py-2 rounded"
+        >Notes</a
+      >
+    </div>
+  </nav>
+</div>
+<div class="container mx-auto p-4 pt-0">
+  <router-outlet></router-outlet>
+</div>

@@ -1,0 +1,36 @@
+<div
+  class="p-4 rounded-3xl task neumorphic active-task flex justify-between items-center"
+>
+  <div class="flex-1 w-[85%] overflow-hidden">
+    <h3 class="text-accent font-bold">{{ note.title }}</h3>
+    <p
+      #content
+      class="text-white"
+      [ngClass]="{ 'max-h-[90px] overflow-hidden': !isExpanded }"
+      style="white-space: pre-wrap"
+    >
+      {{ note.content }}
+    </p>
+    <p class="text-sm text-gray-500 flex justify-between items-center">
+      Создано: {{ note.createdAt | date : "short" }}
+
+      <span
+        *ngIf="isOverflowing"
+        (click)="toggleExpand()"
+        class="text-gray-400 mt-2 cursor-pointer flex-1 text-center arrow-icon-down"
+        [ngClass]="isExpanded ? 'fas fa-angle-up' : 'fas fa-angle-down'"
+      ></span>
+    </p>
+  </div>
+  <div class="flex gap-2">
+    <button
+      (click)="onToggleFavorite()"
+      class="button text-yellow-500 button-circle button-icon task-button cursor-pointer"
+      [ngClass]="note.favorite ? 'fas fa-star' : 'far fa-star'"
+    ></button>
+    <button
+      (click)="onDelete()"
+      class="button text-red-500 button-circle button-icon task-button fas fa-trash cursor-pointer"
+    ></button>
+  </div>
+</div>

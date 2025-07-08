@@ -1,0 +1,42 @@
+<div class="p-4">
+  <!-- Табы -->
+  <div
+    role="tablist"
+    class="tabs tabs-border flex items-center gap-[10px] cursor-pointer"
+  >
+    <a
+      role="tab"
+      class="tab tab-link"
+      [ngClass]="activeTab === 'all' ? 'link-active' : ''"
+      (click)="setTab('all')"
+      >Все</a
+    >
+    <a
+      role="tab"
+      class="tab tab-link"
+      (click)="setTab('favorites')"
+      [ngClass]="activeTab === 'favorites' ? 'link-active' : ''"
+      >Favorites</a
+    >
+    <a
+      role="tab"
+      class="tab tab-link"
+      (click)="setTab('frequent')"
+      [ngClass]="activeTab === 'frequent' ? 'link-active' : ''"
+    >
+      Tab 3</a
+    >
+  </div>
+
+  <!-- Список элементов -->
+  <div class="cliapboard-list flex flex-col gap-[10px] py-[10px]">
+    <app-clipboard-item
+      *ngFor="let item of items"
+      [item]="item"
+      (toggleFavorite)="toggleFavorite($event)"
+      (hideText)="hideText($event)"
+      (copy)="copyText($event)"
+      (delete)="deleteItem($event)"
+    ></app-clipboard-item>
+  </div>
+</div>

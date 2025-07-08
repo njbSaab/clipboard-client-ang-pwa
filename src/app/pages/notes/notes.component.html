@@ -1,0 +1,50 @@
+<div class="p-4">
+  <!-- Форма для создания заметки -->
+  <div class="mb-4">
+    <input
+      [(ngModel)]="newNoteTitle"
+      placeholder="Заголовок"
+      class="p-2 w-full mb-2 task-input"
+    />
+    <textarea
+      [(ngModel)]="newNoteContent"
+      placeholder="Содержимое"
+      class="p-2 w-full mb-2 task-input"
+      (keydown)="onKeydown($event)"
+    ></textarea>
+    <button
+      (click)="createNote()"
+      class="button text-green-500 button-note task-button fas fa-plus cursor-pointer"
+    >
+      <span> Добавить заметку </span>
+    </button>
+  </div>
+
+  <!-- Табы -->
+  <div class="flex space-x-4 mb-4">
+    <a
+      (click)="setTab('all')"
+      class="tab px-4 py-2 rounded-xl"
+      [ngClass]="activeTab === 'all' ? 'tab-active' : ''"
+    >
+      Все
+    </a>
+    <a
+      (click)="setTab('favorites')"
+      class="tab px-4 py-2 rounded-xl"
+      [ngClass]="activeTab === 'favorites' ? 'tab-active' : ''"
+    >
+      Избранные
+    </a>
+  </div>
+
+  <!-- Список заметок -->
+  <div class="space-y-4 flex flex-col">
+    <app-note-item
+      *ngFor="let note of notes"
+      [note]="note"
+      (toggleFavorite)="toggleFavorite($event)"
+      (delete)="deleteNote($event)"
+    ></app-note-item>
+  </div>
+</div>

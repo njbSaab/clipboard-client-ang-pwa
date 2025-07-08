@@ -1,0 +1,44 @@
+<div
+  class="p-4 rounded-3xl flex justify-between items-center task neumorphic active-task"
+>
+  <div class="tooltip" data-tip="hello">
+    <p class="text-basic">
+      {{ item.content.slice(0, 5)
+      }}<span
+        *ngIf="!item.isTextHidden"
+        class="hidden-clip-text"
+        (mouseenter)="onMouseEnter()"
+        (mouseleave)="onMouseLeave()"
+      >
+        {{ item.content.slice(5, 50) }}
+      </span>
+      <span class="show-clip-text text-white" *ngIf="item.isTextHidden">{{
+        item.content
+      }}</span>
+    </p>
+    <p class="text-sm text-gray-500">
+      Создано:{{ item.createdAt | date : "short" }}
+    </p>
+  </div>
+  <div class="controlls-w">
+    <button
+      (click)="onCopy()"
+      class="button text-green-500 button-circle button-icon task-button"
+      [ngClass]="isCopied ? 'fas fa-check' : 'fas fa-copy'"
+    ></button>
+    <button
+      (click)="onToggleHideText()"
+      class="button text-blue-500 button-circle button-icon task-button"
+      [ngClass]="item.isTextHidden ? 'fas fa-eye' : 'fas fa-eye-slash'"
+    ></button>
+    <button
+      (click)="onToggleFavorite()"
+      class="button text-yellow-500 button-circle button-icon task-button cursor-pointer"
+      [ngClass]="item.favorite ? 'fas fa-star' : 'far fa-star'"
+    ></button>
+    <button
+      (click)="onDelete()"
+      class="button text-red-500 button-circle button-icon task-button fas fa-trash cursor-pointer"
+    ></button>
+  </div>
+</div>
