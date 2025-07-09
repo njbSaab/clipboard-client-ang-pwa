@@ -6,4 +6,6 @@ export interface ClipboardItem {
     favorite: boolean;
     usageCount: number;
     isTextHidden?: boolean;
+    source?: 'button' | 'mouse';
+    isCopied?: boolean;
   }

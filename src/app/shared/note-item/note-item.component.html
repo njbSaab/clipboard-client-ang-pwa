@@ -1,7 +1,9 @@
 <div
   class="p-4 rounded-3xl task neumorphic active-task flex justify-between items-center"
+  [ngClass]="{ 'flex-col': isEditing }"
 >
-  <div class="flex-1 w-[85%] overflow-hidden">
+  <!-- Отображение заметки -->
+  <div *ngIf="!isEditing" class="flex-1 w-[85%] overflow-hidden">
     <h3 class="text-accent font-bold">{{ note.title }}</h3>
     <p
       #content
@@ -11,7 +13,7 @@
     >
       {{ note.content }}
     </p>
-    <p class="text-sm text-gray-500 flex justify-between items-center">
+    <p class="text-sm text-hover-50 flex justify-between items-center">
       Создано: {{ note.createdAt | date : "short" }}
 
       <span
@@ -22,11 +24,48 @@
       ></span>
     </p>
   </div>
-  <div class="flex gap-2">
+
+  <!-- Форма редактирования -->
+  <div *ngIf="isEditing" class="flex-1 w-full space-y-2">
+    <input
+      [(ngModel)]="editTitle"
+      (keydown)="onKeydown($event)"
+      placeholder="Заголовок"
+      class="p-2 w-full mb-2 task-input text-hover"
+    />
+    <textarea
+      [(ngModel)]="editContent"
+      (keydown)="onKeydown($event)"
+      placeholder="Содержимое"
+      class="p-2 w-full mb-2 task-input text-hover-light"
+      rows="4"
+    ></textarea>
+    <div class="flex gap-2">
+      <button
+        (click)="saveEdit()"
+        class="button text-green-500 button-note task-button fas fa-save cursor-pointer"
+      >
+        <span> Сохранить </span>
+      </button>
+      <button
+        (click)="cancelEdit()"
+        class="button text-gray-500 button-note task-button fas fa-times cursor-pointer"
+      >
+        <span> Отмена </span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Кнопки действий -->
+  <div *ngIf="!isEditing" class="flex gap-2">
     <button
       (click)="onToggleFavorite()"
       class="button text-yellow-500 button-circle button-icon task-button cursor-pointer"
       [ngClass]="note.favorite ? 'fas fa-star' : 'far fa-star'"
+    ></button>
+    <button
+      (click)="onEdit()"
+      class="button text-blue-400 button-circle button-icon task-button fas fa-edit cursor-pointer"
     ></button>
     <button
       (click)="onDelete()"

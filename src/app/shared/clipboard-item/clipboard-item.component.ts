@@ -13,26 +13,32 @@ export class ClipboardItemComponent {
   @Output() copy = new EventEmitter<ClipboardItem>();
   @Output() hideText = new EventEmitter<ClipboardItem>();
   isCopied = false;
+
   onToggleFavorite() {
     this.toggleFavorite.emit(this.item);
   }
+
   onDelete() {
     this.delete.emit(this.item);
   }
+
   onCopy() {
     this.isCopied = true;
     this.copy.emit(this.item);
     setTimeout(() => {
       this.isCopied = false;
-    }, 300); // 0.3 секунды
+    }, 300);
   }
+
   onToggleHideText() {
-    this.hideText.emit(this.item);
+    this.hideText.emit({ ...this.item, isTextHidden: !this.item.isTextHidden, source: 'button' });
   }
+
   onMouseEnter() {
-    this.hideText.emit({ ...this.item, isTextHidden: true });
+    this.hideText.emit({ ...this.item, isTextHidden: true, source: 'mouse' });
   }
+
   onMouseLeave() {
-    this.hideText.emit({ ...this.item, isTextHidden: false });
+    this.hideText.emit({ ...this.item, isTextHidden: false, source: 'mouse' });
   }
 }

@@ -128,6 +128,21 @@ svg {
     opacity: 0;
   }
 }
+h3.text-accent {
+  font-size: 22px;
+}
+.display-none {
+  display: none !important;
+}
+.text-hover {
+  color: var(--color-hover);
+}
+.text-hover-50 {
+  color: #4e97fd83;
+}
+.text-hover-light {
+  color: #d4dcf8;
+}
 /* Styles for buttons */
 .button {
   position: relative;
@@ -360,4 +375,98 @@ body.overflow-hidden {
 .arrow-icon-down {
   color: var(--color-hover);
   transition: color 0.3s;
+}
+.cliapboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  min-height: 100px; /* Убедитесь, что есть место для drop */
+}
+
+app-clipboard-item {
+  position: relative;
+  cursor: move; /* Указывает, что элемент можно перетаскивать */
+}
+.task {
+  position: relative;
+  cursor: move; /* Указывает, что элемент можно перетаскивать */
+  transition: transform 0.2s ease, box-shadow 0.2s ease; /* Плавные переходы */
+}
+
+/* Эффект при начале перетаскивания */
+.task.dnd-drag-start {
+  opacity: 0.7;
+  transform: scale(0.95) rotate(2deg); /* Уменьшение и лёгкое вращение */
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3); /* Тень */
+  animation: wiggle 0.3s ease infinite; /* Подёргивание */
+}
+
+/* Анимация подёргивания */
+@keyframes wiggle {
+  0% {
+    transform: scale(0.95) rotate(2deg);
+  }
+  50% {
+    transform: scale(0.95) rotate(-2deg);
+  }
+  100% {
+    transform: scale(0.95) rotate(2deg);
+  }
+}
+
+/* Эффект для превью перетаскиваемого элемента */
+.dnd-drag-preview {
+  opacity: 0.8;
+  transform: scale(1.05) rotate(3deg); /* Увеличение и вращение */
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4); /* Более выраженная тень */
+  background-color: #f0f0f0; /* Лёгкий фон */
+  border-radius: 12px; /* Скругление углов */
+}
+
+/* Эффект для элемента в зоне сброса */
+.task.dnd-drag-over {
+  border: 2px dashed #4a90e2; /* Пунктирная синяя рамка */
+  background-color: rgba(74, 144, 226, 0.1); /* Лёгкий фон */
+}
+
+.cliapboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  min-height: 100px;
+  transition: background-color 0.2s ease; /* Плавный переход для фона */
+}
+
+/* Эффект для зоны сброса при перетаскивании */
+.cliapboard-list.dnd-drag-over {
+  background-color: rgba(74, 144, 226, 0.15); /* Лёгкий синий фон */
+  border: 2px solid #4a90e2; /* Сплошная синяя рамка */
+  border-radius: 8px; /* Скругление углов */
+}
+
+/* Плавное перемещение элементов в списке */
+app-clipboard-item {
+  transition: transform 0.3s ease; /* Плавная анимация при изменении порядка */
+}
+.dnd-drag-preview {
+  opacity: 0.8;
+  transform: scale(1.05) rotate(3deg);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4), 0 0 10px rgba(74, 144, 226, 0.5); /* Свечение */
+  background-color: #f0f0f0;
+  border-radius: 12px;
+}
+
+.task.dnd-drop {
+  animation: flash 0.5s ease; /* Вспышка после сброса */
+}
+
+@keyframes flash {
+  0% {
+    background-color: rgba(74, 144, 226, 0.3);
+  }
+  100% {
+    background-color: transparent;
+  }
 }

@@ -5,6 +5,8 @@ import { NoteItemComponent } from './note-item/note-item.component';
 import { TuiTabsModule, TuiTilesModule } from '@taiga-ui/kit';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TuiSvgModule } from '@taiga-ui/core';
+import { FormsModule } from '@angular/forms';
+import { DndModule } from 'ngx-drag-drop';
 
 @NgModule({
   declarations: [ClipboardItemComponent, NoteItemComponent],
@@ -14,6 +16,8 @@ import { TuiSvgModule } from '@taiga-ui/core';
     BrowserAnimationsModule,
     TuiTilesModule,
     TuiSvgModule,
+    FormsModule,
+    DndModule
   ],
   exports: [ClipboardItemComponent, NoteItemComponent, TuiTabsModule, TuiTilesModule, TuiSvgModule],
 })

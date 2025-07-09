@@ -1,5 +1,4 @@
 <div class="p-4">
-  <!-- Табы -->
   <div
     role="tablist"
     class="tabs tabs-border flex items-center gap-[10px] cursor-pointer"
@@ -9,7 +8,7 @@
       class="tab tab-link"
       [ngClass]="activeTab === 'all' ? 'link-active' : ''"
       (click)="setTab('all')"
-      >Все</a
+      >All</a
     >
     <a
       role="tab"
@@ -24,15 +23,22 @@
       (click)="setTab('frequent')"
       [ngClass]="activeTab === 'frequent' ? 'link-active' : ''"
     >
-      Tab 3</a
+      Top used</a
     >
   </div>
 
-  <!-- Список элементов -->
-  <div class="cliapboard-list flex flex-col gap-[10px] py-[10px]">
+  <div
+    class="cliapboard-list flex flex-col gap-[10px] py-[10px]"
+    cdkDropList
+    [cdkDropListData]="items"
+    (cdkDropListDropped)="onDrop($event)"
+  >
     <app-clipboard-item
-      *ngFor="let item of items"
+      *ngFor="let item of items; let i = index; trackBy: trackById"
       [item]="item"
+      cdkDrag
+      [cdkDragData]="item"
+      [attr.data-id]="item.id"
       (toggleFavorite)="toggleFavorite($event)"
       (hideText)="hideText($event)"
       (copy)="copyText($event)"

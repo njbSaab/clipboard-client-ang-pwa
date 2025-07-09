@@ -3,11 +3,13 @@
   <div class="mb-4">
     <input
       [(ngModel)]="newNoteTitle"
+      (ngModelChange)="saveDraft()"
       placeholder="Заголовок"
       class="p-2 w-full mb-2 task-input"
     />
     <textarea
       [(ngModel)]="newNoteContent"
+      (ngModelChange)="saveDraft()"
       placeholder="Содержимое"
       class="p-2 w-full mb-2 task-input"
       (keydown)="onKeydown($event)"
@@ -45,6 +47,7 @@
       [note]="note"
       (toggleFavorite)="toggleFavorite($event)"
       (delete)="deleteNote($event)"
+      (edit)="updateNote($event)"
     ></app-note-item>
   </div>
 </div>

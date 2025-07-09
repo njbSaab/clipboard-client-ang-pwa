@@ -1,10 +1,11 @@
 <div
   class="p-4 rounded-3xl flex justify-between items-center task neumorphic active-task"
+  [attr.data-id]="item.id"
 >
   <div class="tooltip" data-tip="hello">
     <p class="text-basic">
-      {{ item.content.slice(0, 5)
-      }}<span
+      {{ item.content.slice(0, 7) }}
+      <span
         *ngIf="!item.isTextHidden"
         class="hidden-clip-text"
         (mouseenter)="onMouseEnter()"
@@ -12,12 +13,12 @@
       >
         {{ item.content.slice(5, 50) }}
       </span>
-      <span class="show-clip-text text-white" *ngIf="item.isTextHidden">{{
-        item.content
-      }}</span>
+      <span class="show-clip-text text-white" *ngIf="item.isTextHidden">
+        {{ item.content }}
+      </span>
     </p>
-    <p class="text-sm text-gray-500">
-      Создано:{{ item.createdAt | date : "short" }}
+    <p class="text-sm text-hover-50">
+      Создано: {{ item.createdAt | date : "short" }}
     </p>
   </div>
   <div class="controlls-w">

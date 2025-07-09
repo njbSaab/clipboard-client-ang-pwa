@@ -9,6 +9,8 @@ import { CoreModule } from './core/core.module';
 import { PagesModule } from './pages/pages.module';
 import { routes } from './app.routes';
 import { environment } from '../environments/environment';
+import { ReactiveFormsModule } from '@angular/forms';
+import { SharedModule } from './shared/shared.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -19,6 +21,8 @@ import { environment } from '../environments/environment';
     CoreModule,
     PagesModule,
     DndModule,
+    ReactiveFormsModule,
+    SharedModule,
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       registrationStrategy: 'registerWhenStable:30000',
