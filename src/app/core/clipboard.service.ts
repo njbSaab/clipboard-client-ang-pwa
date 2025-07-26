@@ -1,15 +1,15 @@
 import { Injectable, NgZone } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, of, throwError } from 'rxjs';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
 import { ClipboardItem } from './models/clipboard-item';
-import { StorageService } from './storage.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class ClipboardService {
-  private apiUrl = 'https://app.njbsaab.tech/clipboard'; // Замените на 'https://app.njbsaab.tech/clipboard' для продакшена
+  private apiUrl = 'https://clipboard-hono-fapp.sdr-expert.workers.dev/clipboard';
+  private userId = '0d35df3f-25ad-425b-86cb-fa7b21626544'; // TODO: Получать из localStorage или сервиса авторизации
 
   constructor(private http: HttpClient, private ngZone: NgZone) {
     this.initClipboardListener();
@@ -22,13 +22,19 @@ export class ClipboardService {
           if (text) {
             this.create(text).subscribe();
           }
+        }).catch((error) => {
+          console.error('Error reading clipboard:', error);
         });
       });
     });
   }
 
-  getAll(userId: string): Observable<ClipboardItem[]> {
-    return this.http.get<ClipboardItem[]>(this.apiUrl, { params: { userId } }).pipe(
+  getAll(search?: string): Observable<ClipboardItem[]> {
+    let params = new HttpParams().set('userId', this.userId);
+    if (search) {
+      params = params.set('search', search);
+    }
+    return this.http.get<ClipboardItem[]>(this.apiUrl, { params }).pipe(
       catchError((error) => {
         console.error('Error fetching clipboard items:', error);
         return throwError(() => new Error('Failed to fetch clipboard items'));
@@ -37,7 +43,7 @@ export class ClipboardService {
   }
 
   create(content: string): Observable<ClipboardItem> {
-    return this.http.post<ClipboardItem>(this.apiUrl, { content }).pipe(
+    return this.http.post<ClipboardItem>(this.apiUrl, { content, userId: this.userId }).pipe(
       catchError((error) => {
         console.error('Error creating clipboard item:', error);
         return throwError(() => new Error('Failed to create clipboard item'));
@@ -46,7 +52,7 @@ export class ClipboardService {
   }
 
   toggleFavorite(id: string, favorite: boolean): Observable<ClipboardItem> {
-    return this.http.patch<ClipboardItem>(`${this.apiUrl}/${id}/favorite`, { favorite }).pipe(
+    return this.http.patch<ClipboardItem>(`${this.apiUrl}/${id}/favorite`, { favorite, userId: this.userId }).pipe(
       catchError((error) => {
         console.error('Error toggling favorite:', error);
         return throwError(() => new Error('Failed to toggle favorite'));
@@ -54,8 +60,10 @@ export class ClipboardService {
     );
   }
 
-  getFrequent(userId: string): Observable<ClipboardItem[]> {
-    return this.http.get<ClipboardItem[]>(`${this.apiUrl}/frequent`, { params: { userId } }).pipe(
+  getFrequent(): Observable<ClipboardItem[]> {
+    return this.http.get<ClipboardItem[]>(`${this.apiUrl}/frequent`, {
+      params: new HttpParams().set('userId', this.userId),
+    }).pipe(
       catchError((error) => {
         console.error('Error fetching frequent items:', error);
         return throwError(() => new Error('Failed to fetch frequent items'));
@@ -64,7 +72,9 @@ export class ClipboardService {
   }
 
   delete(id: string): Observable<void> {
-    return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
+    return this.http.delete<void>(`${this.apiUrl}/${id}`, {
+      params: new HttpParams().set('userId', this.userId),
+    }).pipe(
       catchError((error) => {
         console.error('Error deleting clipboard item:', error);
         return throwError(() => new Error('Failed to delete clipboard item'));
@@ -73,7 +83,7 @@ export class ClipboardService {
   }
 
   incrementUsage(id: string): Observable<ClipboardItem> {
-    return this.http.post<ClipboardItem>(`${this.apiUrl}/${id}/increment`, {}).pipe(
+    return this.http.post<ClipboardItem>(`${this.apiUrl}/${id}/increment`, { userId: this.userId }).pipe(
       catchError((error) => {
         console.error('Error incrementing usage:', error);
         return throwError(() => new Error('Failed to increment usage'));
@@ -81,8 +91,8 @@ export class ClipboardService {
     );
   }
 
-  updateSettings(userId: string, settings: { activeTab?: string; order?: string[]; isTextHidden?: Record<string, boolean> }): Observable<void> {
-    return this.http.patch<void>(`${this.apiUrl}/settings/${userId}`, settings).pipe(
+  updateSettings(settings: { activeTab?: string; itemOrder?: string[]; isTextHidden?: Record<string, boolean> }): Observable<void> {
+    return this.http.patch<void>(`${this.apiUrl}/settings/${this.userId}`, settings).pipe(
       catchError((error) => {
         console.error('Error updating settings:', error);
         return throwError(() => new Error('Failed to update settings'));
@@ -90,11 +100,13 @@ export class ClipboardService {
     );
   }
 
-  getSettings(userId: string): Observable<{ activeTab: string; order: string[]; isTextHidden: Record<string, boolean> }> {
-    return this.http.get<{ activeTab: string; order: string[]; isTextHidden: Record<string, boolean> }>(`${this.apiUrl}/settings/${userId}`).pipe(
+  getSettings(): Observable<{ activeTab: string; itemOrder: string[]; isTextHidden: Record<string, boolean> }> {
+    return this.http.get<{ activeTab: string; itemOrder: string[]; isTextHidden: Record<string, boolean> }>(
+      `${this.apiUrl}/settings/${this.userId}`
+    ).pipe(
       catchError((error) => {
         console.error('Error fetching settings:', error);
-        return of({ activeTab: 'all', order: [], isTextHidden: {} });
+        return throwError(() => new Error('Failed to fetch settings'));
       })
     );
   }

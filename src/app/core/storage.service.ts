@@ -12,17 +12,28 @@ interface ClipboardDB extends DBSchema {
     key: string;
     value: Note;
   };
+  noteDraft: {
+    key: string;
+    value: { title: string; content: string };
+  };
 }
 
-@Injectable()
+@Injectable({
+  providedIn: 'root'
+})
 export class StorageService {
   private dbPromise: Promise<IDBPDatabase<ClipboardDB>>;
 
   constructor() {
-    this.dbPromise = openDB<ClipboardDB>('clipboard-app', 1, {
-      upgrade(db) {
-        db.createObjectStore('clipboard', { keyPath: 'id' });
-        db.createObjectStore('notes', { keyPath: 'id' });
+    this.dbPromise = openDB<ClipboardDB>('clipboard-app', 2, {
+      upgrade(db, oldVersion) {
+        if (oldVersion < 1) {
+          db.createObjectStore('clipboard', { keyPath: 'id' });
+          db.createObjectStore('notes', { keyPath: 'id' });
+        }
+        if (oldVersion < 2) {
+          db.createObjectStore('noteDraft', { keyPath: 'id' });
+        }
       },
     });
   }
@@ -47,15 +58,28 @@ export class StorageService {
     return db.getAll('notes');
   }
 
-  // Новый метод для удаления записи буфера обмена
   async deleteClipboardItem(id: string): Promise<void> {
     const db = await this.dbPromise;
     await db.delete('clipboard', id);
   }
 
-  // Новый метод для удаления заметки
   async deleteNote(id: string): Promise<void> {
     const db = await this.dbPromise;
     await db.delete('notes', id);
+  }
+
+  async saveNoteDraft(title: string, content: string): Promise<void> {
+    const db = await this.dbPromise;
+    await db.put('noteDraft', { title, content }, 'draft');
+  }
+
+  async getNoteDraft(): Promise<{ title: string; content: string } | undefined> {
+    const db = await this.dbPromise;
+    return db.get('noteDraft', 'draft');
+  }
+
+  async clearNoteDraft(): Promise<void> {
+    const db = await this.dbPromise;
+    await db.delete('noteDraft', 'draft');
   }
 }

@@ -3,6 +3,7 @@ import { ClipboardService } from '../../core/clipboard.service';
 import { ClipboardItem } from '../../core/models/clipboard-item';
 import { TuiAlertService } from '@taiga-ui/core';
 import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
+import { debounceTime, Subject } from 'rxjs';
 
 @Component({
   selector: 'app-clipboard',
@@ -12,49 +13,61 @@ import { CdkDragDrop, moveItemInArray } from '@angular/cdk/drag-drop';
 export class ClipboardComponent implements OnInit {
   items: ClipboardItem[] = [];
   activeTab: 'all' | 'favorites' | 'frequent' = 'all';
-  private userId = 'test-user'; // Замените на динамический userId из сервиса аутентификации
+  searchQuery: string = '';
+  private searchSubject = new Subject<string>();
 
   constructor(
     private clipboardService: ClipboardService,
     private alerts: TuiAlertService
-  ) {}
+  ) {
+    this.searchSubject.pipe(debounceTime(300)).subscribe((search) => {
+      this.loadSettingsAndItems(search);
+    });
+  }
 
   ngOnInit() {
     this.loadSettingsAndItems();
   }
 
-  private loadSettingsAndItems() {
-    this.clipboardService.getSettings(this.userId).subscribe({
+  onSearch() {
+    this.searchSubject.next(this.searchQuery);
+  }
+
+  private loadSettingsAndItems(search: string = '') {
+    this.clipboardService.getSettings().subscribe({
       next: (settings) => {
         this.activeTab = settings.activeTab as 'all' | 'favorites' | 'frequent';
-        this.loadItems(settings.order, settings.isTextHidden);
+        this.loadItems(settings.itemOrder, settings.isTextHidden, search);
       },
       error: () => {
         this.alerts.open('Ошибка загрузки настроек').subscribe();
-        this.loadItems([], {});
+        this.loadItems([], {}, search);
       },
     });
   }
 
-  private loadItems(order: string[], hiddenStates: Record<string, boolean>) {
+  private loadItems(order: string[], hiddenStates: Record<string, boolean>, search: string) {
     if (this.activeTab === 'frequent') {
-      this.clipboardService.getFrequent(this.userId).subscribe({
+      this.clipboardService.getFrequent().subscribe({
         next: (items) => {
           this.items = this.sortItemsByOrder(items, order).map(item => ({
             ...item,
+            favorite: !!item.favorite, // Конвертируем 0/1 в boolean
             isTextHidden: hiddenStates[item.id] ?? false,
           }));
         },
         error: () => {
+          this.items = [];
           this.alerts.open('Ошибка загрузки элементов').subscribe();
         },
       });
     } else {
-      this.clipboardService.getAll(this.userId).subscribe({
+      this.clipboardService.getAll(search).subscribe({
         next: (items) => {
           this.items = (this.activeTab === 'favorites' ? items.filter((item) => item.favorite) : items)
             .map(item => ({
               ...item,
+              favorite: !!item.favorite, // Конвертируем 0/1 в boolean
               isTextHidden: hiddenStates[item.id] ?? false,
             }))
             .sort((a, b) => {
@@ -64,6 +77,7 @@ export class ClipboardComponent implements OnInit {
             });
         },
         error: () => {
+          this.items = [];
           this.alerts.open('Ошибка загрузки элементов').subscribe();
         },
       });
@@ -72,8 +86,8 @@ export class ClipboardComponent implements OnInit {
 
   setTab(tab: 'all' | 'favorites' | 'frequent') {
     this.activeTab = tab;
-    this.clipboardService.updateSettings(this.userId, { activeTab: tab }).subscribe({
-      next: () => this.loadSettingsAndItems(),
+    this.clipboardService.updateSettings({ activeTab: tab }).subscribe({
+      next: () => this.loadSettingsAndItems(this.searchQuery),
       error: () => this.alerts.open('Ошибка сохранения вкладки').subscribe(),
     });
   }
@@ -81,7 +95,7 @@ export class ClipboardComponent implements OnInit {
   toggleFavorite(item: ClipboardItem) {
     this.clipboardService.toggleFavorite(item.id, !item.favorite).subscribe({
       next: (updated) => {
-        this.items = this.items.map((i) => (i.id === updated.id ? { ...updated, isTextHidden: i.isTextHidden } : i));
+        this.items = this.items.map((i) => (i.id === updated.id ? { ...updated, favorite: !!updated.favorite, isTextHidden: i.isTextHidden } : i));
       },
       error: () => {
         this.alerts.open('Ошибка изменения избранного').subscribe();
@@ -93,7 +107,7 @@ export class ClipboardComponent implements OnInit {
     navigator.clipboard.writeText(item.content).then(() => {
       this.clipboardService.incrementUsage(item.id).subscribe({
         next: (updated) => {
-          this.items = this.items.map((i) => (i.id === updated.id ? { ...updated, isTextHidden: i.isTextHidden } : i));
+          this.items = this.items.map((i) => (i.id === updated.id ? { ...updated, favorite: !!updated.favorite, isTextHidden: i.isTextHidden } : i));
           this.alerts.open('Текст скопирован!').subscribe();
         },
         error: () => {
@@ -126,7 +140,7 @@ export class ClipboardComponent implements OnInit {
     this.items = this.items.map((i) =>
       i.id === item.id ? { ...i, isTextHidden: newHiddenState } : i
     );
-    this.clipboardService.updateSettings(this.userId, {
+    this.clipboardService.updateSettings({
       isTextHidden: { [item.id]: newHiddenState },
     }).subscribe({
       error: () => this.alerts.open('Ошибка сохранения состояния скрытия').subscribe(),
@@ -137,8 +151,8 @@ export class ClipboardComponent implements OnInit {
     this.clipboardService.delete(item.id).subscribe({
       next: () => {
         this.items = this.items.filter((i) => i.id !== item.id);
-        this.clipboardService.updateSettings(this.userId, {
-          order: this.items.map(i => i.id),
+        this.clipboardService.updateSettings({
+          itemOrder: this.items.map(i => i.id),
         }).subscribe({
           error: () => this.alerts.open('Ошибка обновления порядка после удаления').subscribe(),
         });
@@ -154,8 +168,8 @@ export class ClipboardComponent implements OnInit {
     const newItems = [...this.items];
     moveItemInArray(newItems, event.previousIndex, event.currentIndex);
     this.items = newItems;
-    this.clipboardService.updateSettings(this.userId, {
-      order: this.items.map(i => i.id),
+    this.clipboardService.updateSettings({
+      itemOrder: this.items.map(i => i.id),
     }).subscribe({
       error: () => this.alerts.open('Ошибка сохранения порядка').subscribe(),
     });
